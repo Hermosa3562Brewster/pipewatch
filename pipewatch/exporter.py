@@ -66,3 +66,32 @@ def export_to_file(
 
     with open(filepath, "w", encoding="utf-8") as fh:
         fh.write(content)
+
+
+def export_summary(metrics_list: List[PipelineMetrics]) -> dict:
+    """Return an aggregate summary across all provided PipelineMetrics instances.
+
+    The summary includes total pipeline count, combined record counts, overall
+    error rate, and the number of pipelines in each status.
+    """
+    if not metrics_list:
+        return {}
+
+    total_records = sum(m.total_records for m in metrics_list)
+    total_success = sum(m.success_count for m in metrics_list)
+    total_failure = sum(m.failure_count for m in metrics_list)
+    overall_error_rate = round(total_failure / total_records, 4) if total_records else 0.0
+
+    status_counts: dict = {}
+    for m in metrics_list:
+        status_counts[m.status] = status_counts.get(m.status, 0) + 1
+
+    return {
+        "pipeline_count": len(metrics_list),
+        "total_records": total_records,
+        "total_success": total_success,
+        "total_failure": total_failure,
+        "overall_error_rate": overall_error_rate,
+        "status_counts": status_counts,
+        "summarized_at": datetime.utcnow().isoformat(),
+    }
