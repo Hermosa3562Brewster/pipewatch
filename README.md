@@ -62,6 +62,18 @@ alerts:
 
 ---
 
+## CLI Options
+
+| Option | Description | Default |
+|---|---|---|
+| `--config` | Path to pipeline YAML config file | — |
+| `--stage` | Name of the pipeline stage to monitor | all stages |
+| `--alert-threshold` | Minimum rows/sec before a slow warning is raised | `0` |
+| `--interval` | Polling interval in seconds | `10` |
+| `--output` | Output format: `text` or `json` | `text` |
+
+---
+
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
