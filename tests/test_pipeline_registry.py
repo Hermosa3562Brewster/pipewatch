@@ -113,3 +113,15 @@ def test_get_default_registry_is_singleton():
     r1 = get_default_registry()
     r2 = get_default_registry()
     assert r1 is r2
+
+
+def test_register_re_registration_does_not_overwrite_interval(registry):
+    """Re-registering an existing pipeline should return the original instance
+    unchanged, preserving any previously configured interval.
+    """
+    pm_first = registry.register("etl_orders", interval=60.0)
+    pm_second = registry.register("etl_orders", interval=999.0)
+    # Same instance returned
+    assert pm_first is pm_second
+    # Original interval is preserved, not overwritten by the second call
+    assert pm_second.interval == 60.0
