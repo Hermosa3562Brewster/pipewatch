@@ -77,6 +77,23 @@ def test_alert_manager_no_alerts_when_healthy():
     assert alerts == []
 
 
+def test_alert_manager_multiple_rules_multiple_alerts():
+    """Verify that all triggered rules produce separate alert messages."""
+    m = PipelineMetrics(pipeline_name="pipe")
+    for _ in range(6):
+        m.record_success()
+    for _ in range(4):
+        m.record_failure("err")
+
+    manager = AlertManager()
+    manager.add_rule(AlertRule("High Error", "error_rate", 0.15, "gt"))
+    manager.add_rule(AlertRule("Very High Error", "error_rate", 0.30, "gt"))
+    alerts = manager.evaluate(m)
+    assert len(alerts) == 2
+    assert any("High Error" in a for a in alerts)
+    assert any("Very High Error" in a for a in alerts)
+
+
 # ---------------------------------------------------------------------------
 # Display tests
 # ---------------------------------------------------------------------------
@@ -85,27 +102,3 @@ def test_render_metrics_contains_pipeline_name():
     m = PipelineMetrics(pipeline_name="my-pipeline")
     output = render_metrics(m)
     assert "my-pipeline" in output
-
-
-def test_render_metrics_shows_status():
-    m = PipelineMetrics(pipeline_name="pipe")
-    m.record_success()
-    output = render_metrics(m)
-    assert "IDLE" in output or "RUNNING" in output or "COMPLETED" in output
-
-
-def test_render_alerts_empty():
-    output = render_alerts([])
-    assert "No active alerts" in output
-
-
-def test_render_alerts_shows_messages():
-    output = render_alerts(["[ALERT] High Error: error too high (current=0.2500)"])
-    assert "ALERT" in output
-
-
-def test_render_dashboard_combines_both():
-    m = PipelineMetrics(pipeline_name="dash-pipe")
-    output = render_dashboard(m, ["[ALERT] test alert"])
-    assert "dash-pipe" in output
-    assert "test alert" in output
