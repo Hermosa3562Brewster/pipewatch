@@ -75,3 +75,21 @@ def save_config(cfg: PipewatchConfig, path: str | Path) -> None:
     p.parent.mkdir(parents=True, exist_ok=True)
     with p.open("w") as fh:
         json.dump(config_to_dict(cfg), fh, indent=2)
+
+
+def load_config(path: str | Path) -> PipewatchConfig:
+    """Deserialize a PipewatchConfig from a JSON file.
+
+    Raises:
+        FileNotFoundError: If the specified path does not exist.
+        ValueError: If the file contains invalid JSON or missing required fields.
+    """
+    p = Path(path)
+    if not p.exists():
+        raise FileNotFoundError(f"Config file not found: {p}")
+    try:
+        with p.open("r") as fh:
+            data = json.load(fh)
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"Invalid JSON in config file '{p}': {exc}") from exc
+    return PipewatchConfig(**data)
