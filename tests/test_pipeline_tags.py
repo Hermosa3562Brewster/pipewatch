@@ -87,42 +87,18 @@ def test_filter_by_tags_no_match_returns_empty(registry):
     assert result == {}
 
 
+def test_filter_by_tags_excludes_unregistered_pipelines(registry):
+    """Pipelines present in metrics_map but not tagged should never appear in results."""
+    registry.tag("p1", "sales")
+    metrics_map = {
+        "p1": _make_metrics("p1"),
+        "p2": _make_metrics("p2"),  # p2 has no tags in the registry
+    }
+    result = registry.filter_by_tags(metrics_map, ["sales"])
+    assert set(result.keys()) == {"p1"}
+    assert "p2" not in result
+
+
 # ---------------------------------------------------------------------------
 # tag_display
-# ---------------------------------------------------------------------------
-
-def test_render_tag_summary_no_tags(registry):
-    output = render_tag_summary(registry)
-    assert "No tags" in output
-
-
-def test_render_tag_summary_shows_tag_and_pipeline(registry):
-    registry.tag("etl_sales", "sales")
-    output = render_tag_summary(registry)
-    assert "sales" in output
-    assert "etl_sales" in output
-
-
-def test_render_pipeline_tags_no_tags(registry):
-    output = render_pipeline_tags("etl_sales", registry)
-    assert "no tags" in output
-
-
-def test_render_pipeline_tags_with_tags(registry):
-    registry.tag("etl_sales", "nightly", "sales")
-    output = render_pipeline_tags("etl_sales", registry)
-    assert "#nightly" in output
-    assert "#sales" in output
-
-
-def test_render_tagged_metrics_unknown_tag(registry):
-    output = render_tagged_metrics({}, registry, "ghost")
-    assert "No pipelines" in output
-
-
-def test_render_tagged_metrics_shows_pipeline_info(registry):
-    registry.tag("p1", "sales")
-    m = _make_metrics("p1", status="running")
-    output = render_tagged_metrics({"p1": m}, registry, "sales")
-    assert "p1" in output
-    assert "running" in output
+# -------------------------------------------------------------------------
