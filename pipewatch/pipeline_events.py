@@ -55,6 +55,13 @@ class EventLog:
     def by_type(self, event_type: str) -> List[PipelineEvent]:
         return [e for e in self._events if e.event_type == event_type]
 
+    def last_event_for(self, pipeline: str) -> Optional[PipelineEvent]:
+        """Return the most recent event for the given pipeline, or None if not found."""
+        for event in reversed(self._events):
+            if event.pipeline == pipeline:
+                return event
+        return None
+
     def summary(self) -> Dict[str, int]:
         counts: Dict[str, int] = {t: 0 for t in EVENT_TYPES}
         for e in self._events:
