@@ -13,6 +13,7 @@ def _format_steps(steps: List[str], indent: int = 4) -> str:
 
 
 def render_entry(entry: RunbookEntry) -> str:
+    """Render a single RunbookEntry as a formatted multi-line string."""
     lines = [
         f"  Title     : {entry.title}",
         f"  Condition : {entry.condition}",
@@ -25,6 +26,7 @@ def render_entry(entry: RunbookEntry) -> str:
 
 
 def render_runbook_for_pipeline(runbook: Runbook, pipeline: str) -> str:
+    """Render all runbook entries for a specific pipeline."""
     entries = runbook.get(pipeline)
     lines = [f"Runbook — {pipeline}"]
     lines.append("-" * 40)
@@ -38,6 +40,7 @@ def render_runbook_for_pipeline(runbook: Runbook, pipeline: str) -> str:
 
 
 def render_runbook_table(runbook: Runbook) -> str:
+    """Render all runbook entries as a compact table."""
     pipelines = runbook.all_pipelines()
     lines = [f"{'Pipeline':<20} {'Title':<25} {'Condition':<30} Author"]
     lines.append("-" * 85)
@@ -53,6 +56,7 @@ def render_runbook_table(runbook: Runbook) -> str:
 
 
 def render_runbook_summary(runbook: Runbook) -> str:
+    """Render a one-line summary of the runbook's entry and pipeline counts."""
     total = runbook.total_entries()
     n_pipes = len(runbook.all_pipelines())
     return (
@@ -62,6 +66,7 @@ def render_runbook_summary(runbook: Runbook) -> str:
 
 
 def print_runbook(runbook: Runbook) -> None:
+    """Print the full runbook table followed by a summary line."""
     print(render_runbook_table(runbook))
     print()
     print(render_runbook_summary(runbook))
