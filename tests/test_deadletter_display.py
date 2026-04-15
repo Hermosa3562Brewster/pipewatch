@@ -49,6 +49,12 @@ def test_render_table_filter_by_pipeline(queue):
     assert "pipe_b" not in result
 
 
+def test_render_table_filter_nonexistent_pipeline(queue):
+    """Filtering by a pipeline that has no entries should show the empty message."""
+    result = render_deadletter_table(queue, pipeline="ghost")
+    assert "No dead-letter" in result
+
+
 def test_render_detail_contains_entries(queue):
     result = render_deadletter_detail(queue, "pipe_a")
     assert "pipe_a" in result
@@ -69,3 +75,10 @@ def test_render_summary_contains_totals(queue):
 def test_render_summary_shows_retryable_count(queue):
     result = render_deadletter_summary(queue)
     assert "Retryable" in result
+
+
+def test_render_summary_empty_queue():
+    """Summary for an empty queue should report zero entries."""
+    result = render_deadletter_summary(DeadLetterQueue())
+    assert "Total entries" in result
+    assert "0" in result
