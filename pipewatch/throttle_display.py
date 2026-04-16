@@ -46,6 +46,27 @@ def render_throttle_summary(manager: PipelineThrottleManager) -> str:
     return "\n".join(lines)
 
 
+def render_throttled_only(manager: PipelineThrottleManager) -> str:
+    """Return a table containing only pipelines that are currently throttled.
+
+    Useful for surfacing pipelines that are blocked without the noise of
+    allowed entries in large configurations.
+    """
+    statuses = {name: st for name, st in manager.all_statuses().items() if st.is_throttled}
+    if not statuses:
+        return "No pipelines are currently throttled."
+
+    header = f"{'Pipeline':<22} {'Last Run':<22} {'Min Interval (s)':<18} {'Wait (s)'}"
+    sep = "-" * 80
+    rows = [header, sep]
+    for name, st in statuses.items():
+        rows.append(
+            f"{name:<22} {_fmt_last_run(st):<22} "
+            f"{st.min_interval_seconds:<18.1f} {st.seconds_until_allowed:.1f}"
+        )
+    return "\n".join(rows)
+
+
 def print_throttle(manager: PipelineThrottleManager) -> None:
     print(render_throttle_summary(manager))
     print()
