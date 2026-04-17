@@ -42,6 +42,14 @@ class AlertManager:
     def add_rule(self, rule: AlertRule) -> None:
         self.rules.append(rule)
 
+    def remove_rule(self, name: str) -> bool:
+        """Remove a rule by name. Returns True if a rule was removed, False if not found."""
+        for i, rule in enumerate(self.rules):
+            if rule.name == name:
+                del self.rules[i]
+                return True
+        return False
+
     def evaluate(self, metrics: PipelineMetrics) -> List[str]:
         """Evaluate all rules against the given metrics. Returns list of alert messages."""
         triggered: List[str] = []
