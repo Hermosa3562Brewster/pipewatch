@@ -17,6 +17,7 @@ def _make_report(
     total_runs: int = 10,
     violations: list = None,
 ) -> SLAReport:
+    """Create an SLAReport with sensible defaults for testing."""
     return SLAReport(
         pipeline_name=name,
         compliant=compliant,
@@ -60,6 +61,12 @@ def test_render_table_shows_total_runs():
     report = _make_report(total_runs=42)
     result = render_sla_table([report])
     assert "42" in result
+
+
+def test_render_table_non_compliant_shows_fail_grade():
+    report = _make_report(compliant=False, violations=["error_rate exceeds limit"])
+    result = render_sla_table([report])
+    assert "FAIL" in result
 
 
 def test_render_violations_all_compliant():
