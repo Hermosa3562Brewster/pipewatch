@@ -83,3 +83,13 @@ def test_time_until_next_returns_none_when_allowed(limiter):
 def test_independent_keys_do_not_interfere(limiter):
     limiter.record("key.a")
     assert limiter.is_allowed("key.b") is True
+
+
+def test_reset_nonexistent_key_does_not_raise(limiter):
+    """Resetting a key that was never recorded should be a no-op."""
+    try:
+        limiter.reset("never.recorded")
+    except Exception as exc:
+        pytest.fail(f"reset() raised unexpectedly: {exc}")
+    assert limiter.is_allowed("never.recorded") is True
+    assert limiter.fire_count("never.recorded") == 0
