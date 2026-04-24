@@ -5,16 +5,19 @@ from pipewatch.pipeline_capacity import CapacityTracker, CapacityStatus
 
 
 def _pct_bar(pct: float, width: int = 10) -> str:
+    """Return an ASCII progress bar for the given percentage (0-100)."""
     filled = min(int(pct / 100 * width), width)
     bar = "#" * filled + "-" * (width - filled)
     return f"[{bar}]"
 
 
 def _overload_badge(status: CapacityStatus) -> str:
+    """Return a fixed-width status badge string for the given CapacityStatus."""
     return "[OVERLOADED]" if status.is_overloaded else "[OK]      "
 
 
 def render_capacity_table(tracker: CapacityTracker) -> str:
+    """Render a tabular view of all tracked pipelines and their capacity metrics."""
     pipelines = tracker.all_pipelines()
     if not pipelines:
         return "No capacity data recorded."
@@ -37,6 +40,7 @@ def render_capacity_table(tracker: CapacityTracker) -> str:
 
 
 def render_capacity_summary(tracker: CapacityTracker) -> str:
+    """Render a high-level summary showing total and overloaded pipeline counts."""
     pipelines = tracker.all_pipelines()
     total = len(pipelines)
     overloaded = sum(
@@ -56,7 +60,35 @@ def render_capacity_summary(tracker: CapacityTracker) -> str:
     return "\n".join(lines)
 
 
+def render_pct_bars(tracker: CapacityTracker, width: int = 10) -> str:
+    """Render a compact view of each pipeline's metrics as ASCII progress bars.
+
+    Args:
+        tracker: The CapacityTracker instance to read pipeline data from.
+        width: The character width of each progress bar (default 10).
+
+    Returns:
+        A multi-line string with one row per tracked pipeline.
+    """
+    pipelines = tracker.all_pipelines()
+    if not pipelines:
+        return "No capacity data recorded."
+
+    rows = []
+    for name in sorted(pipelines):
+        st = tracker.status(name)
+        if st is None:
+            continue
+        q_bar = _pct_bar(st.queue_pct, width)
+        m_bar = _pct_bar(st.memory_pct, width)
+        c_bar = _pct_bar(st.reading.cpu_pct, width)
+        rows.append(f"{name:<20} Q:{q_bar} M:{m_bar} C:{c_bar}")
+
+    return "\n".join(rows)
+
+
 def print_capacity(tracker: CapacityTracker) -> None:
+    """Print the full capacity table and summary to stdout."""
     print(render_capacity_table(tracker))
     print()
     print(render_capacity_summary(tracker))
